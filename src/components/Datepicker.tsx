@@ -404,6 +404,24 @@ const Datepicker = (props: DatepickerType) => {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
+        const container = containerRef.current;
+        const calendarContainer = calendarContainerRef.current;
+        const arrow = arrowRef.current;
+
+        if (container && calendarContainer && arrow) {
+            const detail = container.getBoundingClientRect();
+            const screenCenter = window.innerWidth / 2;
+            const containerCenter = (detail.right - detail.x) / 2 + detail.x;
+            if (containerCenter > screenCenter) {
+                return {
+                    position: "fixed" as const,
+                    top: inputRect.bottom + scrollTop + 1,
+                    right: window.innerWidth - inputRect.right, //inputRect.right + scrollLeft,
+                    zIndex: 1000
+                };
+            }
+        }
+
         return {
             position: "fixed" as const,
             top: inputRect.bottom + scrollTop + 1,
@@ -425,7 +443,7 @@ const Datepicker = (props: DatepickerType) => {
                             style={calculatePosition()}
                         >
                             <Arrow ref={arrowRef} />
-                            <div className="mt-2.5 shadow-sm border border-gray-300 px-1 py-0.5 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600 rounded-lg">
+                            <div className="mt-2.5 shadow-sm border border-gray-300 px-1 py-0.5 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600 rounded-lg w-fit">
                                 <div className="flex flex-col lg:flex-row py-2">
                                     {showShortcuts && <Shortcuts />}
 
