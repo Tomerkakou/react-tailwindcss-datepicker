@@ -37,46 +37,35 @@ const Datepicker = (props: DatepickerType) => {
     // Props
     const {
         asSingle = false,
-
-        classNames = undefined,
-        configs = undefined,
+        classNames,
+        configs,
         containerClassName = null,
-
         dateLooking = DEFAULT_DATE_LOOKING,
         disabledDates = null,
         disabled = false,
         displayFormat = DATE_FORMAT,
-
         i18n = LANGUAGE,
         inputClassName = null,
         inputId,
         inputName,
-
-        minDate = undefined,
-        maxDate = undefined,
-
+        minDate,
+        maxDate,
         onChange,
-
         placeholder = null,
         popupClassName = null,
-        popoverDirection = undefined,
+        popoverDirection,
         primaryColor = DEFAULT_COLOR,
-
         separator = DEFAULT_SEPARATOR,
         showFooter = false,
         showShortcuts = false,
         startFrom = null,
         startWeekOn = START_WEEK,
-
         readOnly = false,
         required = false,
-
         toggleClassName = null,
-        toggleIcon = undefined,
-
+        toggleIcon,
         useRange = true,
         value = null,
-
         appendToBody = false
     } = props;
 
@@ -90,25 +79,20 @@ const Datepicker = (props: DatepickerType) => {
         startFrom && dateIsValid(startFrom) ? startFrom : new Date()
     );
     const [secondDate, setSecondDate] = useState<Date>(nextMonthBy(firstDate));
-    const [period, setPeriod] = useState<Period>({
-        start: null,
-        end: null
-    });
+    const [period, setPeriod] = useState<Period>({ start: null, end: null });
     const [dayHover, setDayHover] = useState<DateType>(null);
     const [inputText, setInputText] = useState<string>("");
     const [input, setInput] = useState<HTMLInputElement | null>(null);
 
-    // Custom Hooks use
+    // Custom Hooks
     useOnClickOutside(containerRef.current, event => {
         const container = containerRef.current;
         const calendar = calendarContainerRef.current;
-
         if (calendar && calendar.contains(event?.target as Node)) return;
-
         if (container) hideDatepicker();
     });
 
-    // Functions
+    // Hide datepicker
     const hideDatepicker = useCallback(() => {
         const div = calendarContainerRef.current;
         const arrow = arrowRef.current;
@@ -132,7 +116,7 @@ const Datepicker = (props: DatepickerType) => {
         }
     }, []);
 
-    /* Start First */
+    /** First Calendar Navigation */
     const firstGotoDate = useCallback(
         (date: Date) => {
             if (dateIsSameOrAfter(date, secondDate, "date")) {
@@ -164,12 +148,10 @@ const Datepicker = (props: DatepickerType) => {
         },
         [firstDate, firstGotoDate]
     );
-    /* End First */
 
-    /* Start Second */
+    /** Second Calendar Navigation */
     const secondGotoDate = useCallback(
         (date: Date) => {
-            dateIsSameOrBefore(date, firstDate, "date");
             if (dateIsSameOrBefore(date, firstDate, "date")) {
                 setFirstDate(previousMonthBy(date));
             }
@@ -199,27 +181,8 @@ const Datepicker = (props: DatepickerType) => {
         },
         [secondDate, secondGotoDate]
     );
-    /* End Second */
 
-    // UseEffects & UseLayoutEffect
-    useEffect(() => {
-        const container = containerRef.current;
-        const calendarContainer = calendarContainerRef.current;
-        const arrow = arrowRef.current;
-
-        if (container && calendarContainer && arrow) {
-            const detail = container.getBoundingClientRect();
-            const screenCenter = window.innerWidth / 2;
-            const containerCenter = (detail.right - detail.x) / 2 + detail.x;
-
-            if (containerCenter > screenCenter) {
-                arrow.classList.add("right-0");
-                arrow.classList.add("mr-3.5");
-                calendarContainer.classList.add("right-0");
-            }
-        }
-    }, []);
-
+    // UseEffects
     useEffect(() => {
         if (value && value.startDate && value.endDate) {
             if (dateIsSameOrBefore(value.startDate, value.endDate, "date")) {
@@ -227,7 +190,6 @@ const Datepicker = (props: DatepickerType) => {
                     start: value.startDate,
                     end: value.endDate
                 });
-
                 setInputText(
                     `${dateFormat(value.startDate, displayFormat, i18n)}${
                         asSingle
@@ -237,13 +199,8 @@ const Datepicker = (props: DatepickerType) => {
                 );
             }
         }
-
         if (value && value.startDate === null && value.endDate === null) {
-            setPeriod({
-                start: null,
-                end: null
-            });
-
+            setPeriod({ start: null, end: null });
             setInputText("");
         }
     }, [asSingle, value, displayFormat, separator, i18n]);
@@ -252,7 +209,6 @@ const Datepicker = (props: DatepickerType) => {
         if (startFrom && dateIsValid(startFrom)) {
             const startDate = value?.startDate;
             const endDate = value?.endDate;
-
             if (startDate && dateIsValid(startDate)) {
                 setFirstDate(startDate);
                 if (!asSingle) {
@@ -273,33 +229,30 @@ const Datepicker = (props: DatepickerType) => {
         }
     }, [asSingle, startFrom, value]);
 
-    // Variables
-    const safePrimaryColor = useMemo(() => {
-        if (COLORS.includes(primaryColor)) {
-            return primaryColor as ColorKeys;
+    // This effect originally only tried to handle arrow alignment if not appended to body;
+    // We'll keep some minimal logic to see if we need to shift arrow for left vs right positioning.
+    useEffect(() => {
+        const container = containerRef.current;
+        const calendarContainer = calendarContainerRef.current;
+        const arrow = arrowRef.current;
+
+        if (container && calendarContainer && arrow) {
+            const detail = container.getBoundingClientRect();
+            const screenCenter = window.innerWidth / 2;
+            const containerCenter = (detail.right - detail.x) / 2 + detail.x;
+            if (containerCenter > screenCenter) {
+                arrow.classList.add("right-0");
+                arrow.classList.add("mr-3.5");
+                calendarContainer.classList.add("right-0");
+            }
         }
-        return DEFAULT_COLOR;
+    }, []);
+
+    const safePrimaryColor = useMemo<ColorKeys>(() => {
+        return COLORS.includes(primaryColor) ? (primaryColor as ColorKeys) : DEFAULT_COLOR;
     }, [primaryColor]);
 
     const contextValues = useMemo(() => {
-        if (minDate && !dateIsValid(minDate)) {
-            /* eslint-disable */
-            console.error(`minDate (${minDate}) is invalid date`);
-            /* eslint-enable */
-        }
-
-        if (maxDate && !dateIsValid(maxDate)) {
-            /* eslint-disable */
-            console.error(`minDate (${maxDate}) is invalid date`);
-            /* eslint-enable */
-        }
-
-        if (!i18n || i18n.length === 0) {
-            /* eslint-disable */
-            console.error(`i18n (${i18n}) is invalid`);
-            /* eslint-enable */
-        }
-
         return {
             arrowContainer: arrowRef,
             asSingle,
@@ -378,25 +331,35 @@ const Datepicker = (props: DatepickerType) => {
         appendToBody
     ]);
 
+    // Dynamically build container class name
     const containerClassNameOverload = useMemo(() => {
         const defaultContainerClassName = "relative w-full text-gray-700";
-        return typeof containerClassName === "function"
-            ? containerClassName(defaultContainerClassName)
-            : typeof containerClassName === "string" && containerClassName !== ""
-              ? containerClassName
-              : defaultContainerClassName;
+        if (typeof containerClassName === "function") {
+            return containerClassName(defaultContainerClassName);
+        }
+        if (typeof containerClassName === "string" && containerClassName !== "") {
+            return containerClassName;
+        }
+        return defaultContainerClassName;
     }, [containerClassName]);
 
+    // Dynamically build popup class name
     const popupClassNameOverload = useMemo(() => {
         const defaultPopupClassName =
-            "transition-all ease-out duration-300 absolute z-10 mt-[1px] text-sm lg:text-xs 2xl:text-sm translate-y-4 opacity-0 hidden";
-        return typeof popupClassName === "function"
-            ? popupClassName(defaultPopupClassName)
-            : typeof popupClassName === "string" && popupClassName !== ""
-              ? popupClassName
-              : defaultPopupClassName;
+            "transition-all ease-out duration-300 absolute z-10 mt-[1px] text-sm lg:text-xs 2xl:text-sm translate-y-4 opacity-0 hidden w-fit";
+        if (typeof popupClassName === "function") {
+            return popupClassName(defaultPopupClassName);
+        }
+        if (typeof popupClassName === "string" && popupClassName !== "") {
+            return popupClassName;
+        }
+        return defaultPopupClassName;
     }, [popupClassName]);
 
+    /**
+     * Decide the position for the calendar if `appendToBody` is true.
+     * We also handle up/down positioning if `popoverDirection` is provided.
+     */
     const calculatePosition = useCallback(() => {
         if (!appendToBody || !input) return {};
 
@@ -405,30 +368,67 @@ const Datepicker = (props: DatepickerType) => {
         const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
         const container = containerRef.current;
-        const calendarContainer = calendarContainerRef.current;
         const arrow = arrowRef.current;
 
-        if (container && calendarContainer && arrow) {
-            const detail = container.getBoundingClientRect();
-            const screenCenter = window.innerWidth / 2;
-            const containerCenter = (detail.right - detail.x) / 2 + detail.x;
-            if (containerCenter > screenCenter) {
-                return {
-                    position: "fixed" as const,
-                    top: inputRect.bottom + scrollTop + 1,
-                    right: window.innerWidth - inputRect.right, //inputRect.right + scrollLeft,
-                    zIndex: 1000
-                };
-            }
-        }
-
-        return {
-            position: "fixed" as const,
+        // By default, place below (down).
+        let style: React.CSSProperties = {
+            position: "fixed",
             top: inputRect.bottom + scrollTop + 1,
             left: inputRect.left + scrollLeft,
             zIndex: 1000
         };
-    }, [appendToBody, input, containerRef, calendarContainerRef, arrowRef]);
+
+        // Check direction
+        if (popoverDirection === "up") {
+            // Place above
+            style = {
+                position: "fixed",
+                // The "bottom" css property is from the *bottom* of the viewport,
+                // so let's compute: window.innerHeight - inputRect.top => distance from top of input to bottom of viewport
+                bottom: window.innerHeight - inputRect.top - scrollTop + 1,
+                left: inputRect.left + scrollLeft,
+                zIndex: 1000
+            };
+        } else if (popoverDirection === "down") {
+            // Force down — can override any "smart" logic here
+            style = {
+                position: "fixed",
+                top: inputRect.bottom + scrollTop + 1,
+                left: inputRect.left + scrollLeft,
+                zIndex: 1000
+            };
+        } else {
+            // If popoverDirection is not set, you can keep the old "auto" logic
+            // For example:
+            // You could also check if there's enough space below or not.
+            // If not enough space below, place it up. (similar to the logic in `Input`.)
+            // e.g.,
+            // const spaceBelow = window.innerHeight - inputRect.bottom;
+            // if (spaceBelow < 300) {
+            //   style = {
+            //     position: "fixed",
+            //     bottom: window.innerHeight - inputRect.top - scrollTop + 1,
+            //     left: inputRect.left + scrollLeft,
+            //     zIndex: 1000
+            //   };
+            // }
+        }
+
+        const containerCenter = (inputRect.right - inputRect.left) / 2 + inputRect.left;
+        const screenCenter = window.innerWidth / 2;
+
+        // Place it left or right if near the screen's edge
+        if (container && arrow) {
+            if (containerCenter > screenCenter) {
+                arrow.classList.add("right-0");
+                arrow.classList.add("mr-3.5");
+                style.right = window.innerWidth - inputRect.right;
+                style.left = undefined; // remove left if we use right
+            }
+        }
+
+        return style;
+    }, [appendToBody, input, popoverDirection]);
 
     return (
         <DatepickerContext.Provider value={contextValues}>
