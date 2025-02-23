@@ -428,7 +428,7 @@ const Datepicker = (props: DatepickerType) => {
             left: inputRect.left + scrollLeft,
             zIndex: 1000
         };
-    }, [appendToBody, input]);
+    }, [appendToBody, input, containerRef, calendarContainerRef, arrowRef]);
 
     return (
         <DatepickerContext.Provider value={contextValues}>
