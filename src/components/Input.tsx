@@ -36,7 +36,10 @@ const Input = () => {
         required,
         input,
         setInput,
-        appendToBody
+        appendToBody,
+        mounted,
+        modal,
+        backdrop
     } = useContext(DatepickerContext);
 
     // UseRefs
@@ -178,7 +181,6 @@ const Input = () => {
             const input = inputRef.current;
 
             if (input) {
-                input.focus();
                 if (inputText) {
                     changeInputText("");
                     if (dayHover) {
@@ -193,6 +195,8 @@ const Input = () => {
                             input
                         );
                     }
+                } else {
+                    input.focus();
                 }
             }
         }
@@ -214,18 +218,23 @@ const Input = () => {
         inputText,
         period.end,
         period.start,
-        inputRef
+        inputRef,
+        mounted
     ]);
 
     useEffect(() => {
         const div = calendarContainer?.current;
         const input = inputRef.current;
         const arrow = arrowContainer?.current;
+        const modalDiv = modal?.current;
+        const backdropDiv = backdrop?.current;
 
         function showCalendarContainer() {
             if (arrow && div && div.classList.contains("hidden")) {
                 div.classList.remove("hidden");
                 div.classList.add("block");
+                modalDiv?.classList.remove("hidden");
+                backdropDiv?.classList.remove("hidden");
 
                 const popoverOnUp = popoverDirection == "up";
                 const popoverOnDown = popoverDirection === "down";
@@ -253,7 +262,6 @@ const Input = () => {
                 }, 1);
             }
         }
-
         if (div && input) {
             input.addEventListener("focus", showCalendarContainer);
         }
@@ -263,7 +271,15 @@ const Input = () => {
                 input.removeEventListener("focus", showCalendarContainer);
             }
         };
-    }, [calendarContainer, arrowContainer, popoverDirection, appendToBody]);
+    }, [
+        calendarContainer,
+        arrowContainer,
+        popoverDirection,
+        appendToBody,
+        mounted,
+        modal,
+        backdrop
+    ]);
 
     return (
         <>

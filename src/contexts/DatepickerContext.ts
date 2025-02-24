@@ -71,12 +71,15 @@ interface DatepickerStore {
     updateFirstDate: (date: Date) => void;
 
     value: DateValueType;
+    mounted: boolean;
+    modal: RefObject<HTMLDivElement | null> | null;
+    backdrop: RefObject<HTMLDivElement | null> | null;
 }
 
 const DatepickerContext = createContext<DatepickerStore>({
     arrowContainer: null,
     asSingle: false,
-    appendToBody: false,
+    appendToBody: true,
 
     calendarContainer: null,
     changeDatepickerValue: () => {},
@@ -124,7 +127,10 @@ const DatepickerContext = createContext<DatepickerStore>({
 
     updateFirstDate: () => {},
 
-    value: null
+    value: null,
+    mounted: false,
+    modal: null,
+    backdrop: null
 });
 
 export default DatepickerContext;

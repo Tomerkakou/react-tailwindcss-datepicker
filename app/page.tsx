@@ -46,7 +46,7 @@ export default function Playground() {
     const [startWeekOn, setStartWeekOn] = useState<WeekStringType>("mon");
     const [required, setRequired] = useState(false);
     const [popoverDirection, setPopoverDirection] = useState<PopoverDirectionType>("down");
-    const [appendToBody, setAppendToBody] = useState(false);
+    const [appendToBody, setAppendToBody] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     return (
@@ -78,6 +78,7 @@ export default function Playground() {
                                     onChange={setValue}
                                     appendToBody
                                     displayFormat="MMM DD, YYYY"
+                                    popoverDirection={popoverDirection}
                                 />
                             </div>
                             <button
@@ -91,8 +92,8 @@ export default function Playground() {
                 </>
             )}
 
-            <div className="max-w-md mx-auto my-4">
-                <Datepicker
+            <div className="max-w-md ms-auto my-4">
+                {/* <Datepicker
                     value={value}
                     primaryColor={primaryColor as ColorKeys}
                     onChange={(value, e) => {
@@ -162,7 +163,7 @@ export default function Playground() {
                     }}
                     popoverDirection={popoverDirection}
                     required={required}
-                />
+                /> */}
             </div>
             <div className="py-4 max-w-3xl mx-auto flex flex-row flex-wrap">
                 <div className="w-full sm:w-1/3 pr-2 flex flex-row flex-wrap sm:flex-col">

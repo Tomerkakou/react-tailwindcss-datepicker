@@ -1,3 +1,4 @@
+"use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -15,7 +16,7 @@ import {
     START_WEEK
 } from "../constants";
 import DatepickerContext from "../contexts/DatepickerContext";
-import useOnClickOutside from "../hooks";
+import useOnClickOutside, { useMediaQuery } from "../hooks";
 import {
     dateFormat,
     dateIsAfter,
@@ -31,6 +32,7 @@ import {
 import { Period, DatepickerType, ColorKeys, DateType } from "../types";
 
 import Arrow from "./icons/Arrow";
+import CloseIcon from "./icons/CloseIcon";
 import VerticalDash from "./VerticalDash";
 
 const Datepicker = (props: DatepickerType) => {
@@ -66,13 +68,15 @@ const Datepicker = (props: DatepickerType) => {
         toggleIcon,
         useRange = true,
         value = null,
-        appendToBody = false
+        appendToBody = true
     } = props;
 
     // Refs
     const containerRef = useRef<HTMLDivElement | null>(null);
     const calendarContainerRef = useRef<HTMLDivElement | null>(null);
     const arrowRef = useRef<HTMLDivElement | null>(null);
+    const backdropRef = useRef<HTMLDivElement | null>(null);
+    const modalRef = useRef<HTMLDivElement | null>(null);
 
     // States
     const [firstDate, setFirstDate] = useState<Date>(
@@ -83,6 +87,13 @@ const Datepicker = (props: DatepickerType) => {
     const [dayHover, setDayHover] = useState<DateType>(null);
     const [inputText, setInputText] = useState<string>("");
     const [input, setInput] = useState<HTMLInputElement | null>(null);
+    const isSmallScreen = useMediaQuery("(max-width: 639px)");
+    const [mounted, setMounted] = useState<boolean>(false);
+    const [trigger, setTrigger] = useState();
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Custom Hooks
     useOnClickOutside(containerRef.current, event => {
@@ -96,11 +107,14 @@ const Datepicker = (props: DatepickerType) => {
     const hideDatepicker = useCallback(() => {
         const div = calendarContainerRef.current;
         const arrow = arrowRef.current;
-        if (arrow && div && div.classList.contains("block")) {
+        const modal = modalRef.current;
+        const backdrop = backdropRef.current;
+        if (arrow && div && modal && backdrop && div.classList.contains("block")) {
+            modal.classList.add("hidden");
+            backdrop.classList.add("hidden");
             div.classList.remove("block");
             div.classList.remove("translate-y-0");
             div.classList.remove("opacity-1");
-            div.classList.add("translate-y-4");
             div.classList.add("opacity-0");
             setTimeout(() => {
                 div.classList.remove("bottom-full");
@@ -114,7 +128,7 @@ const Datepicker = (props: DatepickerType) => {
                 arrow.classList.add("border-t");
             }, 300);
         }
-    }, []);
+    }, [mounted]);
 
     /** First Calendar Navigation */
     const firstGotoDate = useCallback(
@@ -246,7 +260,7 @@ const Datepicker = (props: DatepickerType) => {
                 calendarContainer.classList.add("right-0");
             }
         }
-    }, []);
+    }, [mounted]);
 
     const safePrimaryColor = useMemo<ColorKeys>(() => {
         return COLORS.includes(primaryColor) ? (primaryColor as ColorKeys) : DEFAULT_COLOR;
@@ -293,7 +307,10 @@ const Datepicker = (props: DatepickerType) => {
             toggleIcon,
             updateFirstDate: (newDate: Date) => firstGotoDate(newDate),
             value,
-            appendToBody
+            appendToBody,
+            mounted,
+            modal: modalRef,
+            backdrop: backdropRef
         };
     }, [
         minDate,
@@ -328,7 +345,10 @@ const Datepicker = (props: DatepickerType) => {
         toggleIcon,
         value,
         firstGotoDate,
-        appendToBody
+        appendToBody,
+        mounted,
+        modalRef,
+        backdropRef
     ]);
 
     // Dynamically build container class name
@@ -346,7 +366,7 @@ const Datepicker = (props: DatepickerType) => {
     // Dynamically build popup class name
     const popupClassNameOverload = useMemo(() => {
         const defaultPopupClassName =
-            "transition-all ease-out duration-300 absolute z-10 mt-[1px] text-sm lg:text-xs 2xl:text-sm translate-y-4 opacity-0 hidden w-fit";
+            "transition-all ease-out duration-300 absolute z-10 mt-[1px] text-sm lg:text-xs 2xl:text-sm  opacity-0 hidden w-fit";
         if (typeof popupClassName === "function") {
             return popupClassName(defaultPopupClassName);
         }
@@ -377,6 +397,8 @@ const Datepicker = (props: DatepickerType) => {
             left: inputRect.left + scrollLeft,
             zIndex: 1000
         };
+
+        setTimeout(() => setTrigger({}), 0);
 
         // Check direction
         if (popoverDirection === "up") {
@@ -414,8 +436,9 @@ const Datepicker = (props: DatepickerType) => {
             // }
         }
 
-        const containerCenter = (inputRect.right - inputRect.left) / 2 + inputRect.left;
-        const screenCenter = window.innerWidth / 2;
+        const containerCenter =
+            Math.floor((inputRect.right - inputRect.left) / 2 + inputRect.left) + 1;
+        const screenCenter = Math.floor(window.innerWidth / 2);
 
         // Place it left or right if near the screen's edge
         if (container && arrow) {
@@ -427,15 +450,27 @@ const Datepicker = (props: DatepickerType) => {
             }
         }
 
-        return style;
-    }, [appendToBody, input, popoverDirection]);
+        if (isSmallScreen) {
+            return {
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 1000,
+                height: "100vh",
+                width: "100vw"
+            } as React.CSSProperties;
+        }
+
+        return style as React.CSSProperties;
+    }, [appendToBody, input, popoverDirection, mounted, isSmallScreen, arrowRef, containerRef]);
 
     return (
         <DatepickerContext.Provider value={contextValues}>
             <div className={containerClassNameOverload} ref={containerRef}>
                 <Input />
-
-                {appendToBody ? (
+                {mounted &&
                     createPortal(
                         <div
                             className={popupClassNameOverload}
@@ -443,96 +478,75 @@ const Datepicker = (props: DatepickerType) => {
                             style={calculatePosition()}
                         >
                             <Arrow ref={arrowRef} />
-                            <div className="mt-2.5 shadow-sm border border-gray-300 px-1 py-0.5 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600 rounded-lg w-fit">
-                                <div className="flex flex-col lg:flex-row py-2">
-                                    {showShortcuts && <Shortcuts />}
+                            <div
+                                ref={backdropRef}
+                                className={
+                                    isSmallScreen ? "fixed inset-0 bg-black bg-opacity-50 z-40" : ""
+                                }
+                            />
+                            <div
+                                ref={modalRef}
+                                className={
+                                    isSmallScreen
+                                        ? "fixed inset-0 z-50 flex items-center justify-center overflow-auto p-3"
+                                        : ""
+                                }
+                            >
+                                <div className="mt-2.5 shadow-sm border border-gray-300 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600 rounded-lg w-fit p-3">
+                                    {isSmallScreen && (
+                                        <div className="flex justify-end p-1 w-full">
+                                            <button
+                                                onClick={hideDatepicker}
+                                                className="text-gray-500 hover:text-gray-700"
+                                            >
+                                                <CloseIcon className="w-6 h-6" />
+                                            </button>
+                                        </div>
+                                    )}
+                                    <div className="flex flex-col lg:flex-row py-2 max-h-[80vh] overflow-y-auto max-w-[80vw]">
+                                        {showShortcuts && <Shortcuts />}
 
-                                    <div
-                                        className={`flex items-stretch flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-1.5 ${
-                                            showShortcuts ? "md:pl-2" : "md:pl-1"
-                                        } pr-2 lg:pr-1`}
-                                    >
-                                        <Calendar
-                                            date={firstDate}
-                                            onClickPrevious={previousMonthFirst}
-                                            onClickNext={nextMonthFirst}
-                                            changeMonth={changeFirstMonth}
-                                            changeYear={changeFirstYear}
-                                            minDate={minDate}
-                                            maxDate={maxDate}
-                                        />
-
-                                        {useRange && (
-                                            <>
-                                                <div className="flex items-center">
-                                                    <VerticalDash />
-                                                </div>
-
-                                                <Calendar
-                                                    date={secondDate}
-                                                    onClickPrevious={previousMonthSecond}
-                                                    onClickNext={nextMonthSecond}
-                                                    changeMonth={changeSecondMonth}
-                                                    changeYear={changeSecondYear}
-                                                    minDate={minDate}
-                                                    maxDate={maxDate}
-                                                />
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {showFooter && <Footer />}
-                            </div>
-                        </div>,
-                        document.body
-                    )
-                ) : (
-                    <div className={popupClassNameOverload} ref={calendarContainerRef}>
-                        <Arrow ref={arrowRef} />
-                        <div className="mt-2.5 shadow-sm border border-gray-300 px-1 py-0.5 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600 rounded-lg">
-                            <div className="flex flex-col lg:flex-row py-2">
-                                {showShortcuts && <Shortcuts />}
-
-                                <div
-                                    className={`flex items-stretch flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-1.5 ${
-                                        showShortcuts ? "md:pl-2" : "md:pl-1"
-                                    } pr-2 lg:pr-1`}
-                                >
-                                    <Calendar
-                                        date={firstDate}
-                                        onClickPrevious={previousMonthFirst}
-                                        onClickNext={nextMonthFirst}
-                                        changeMonth={changeFirstMonth}
-                                        changeYear={changeFirstYear}
-                                        minDate={minDate}
-                                        maxDate={maxDate}
-                                    />
-
-                                    {useRange && (
-                                        <>
-                                            <div className="flex items-center">
-                                                <VerticalDash />
-                                            </div>
-
+                                        <div
+                                            className={`flex items-stretch flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-1.5 ${
+                                                showShortcuts ? "md:pl-1" : "md:pl-1"
+                                            } pr-1 lg:pr-1`}
+                                        >
                                             <Calendar
-                                                date={secondDate}
-                                                onClickPrevious={previousMonthSecond}
-                                                onClickNext={nextMonthSecond}
-                                                changeMonth={changeSecondMonth}
-                                                changeYear={changeSecondYear}
+                                                date={firstDate}
+                                                onClickPrevious={previousMonthFirst}
+                                                onClickNext={nextMonthFirst}
+                                                changeMonth={changeFirstMonth}
+                                                changeYear={changeFirstYear}
                                                 minDate={minDate}
                                                 maxDate={maxDate}
                                             />
-                                        </>
-                                    )}
+
+                                            {useRange && (
+                                                <>
+                                                    <div className="flex items-center">
+                                                        <VerticalDash />
+                                                    </div>
+
+                                                    <Calendar
+                                                        date={secondDate}
+                                                        onClickPrevious={previousMonthSecond}
+                                                        onClickNext={nextMonthSecond}
+                                                        changeMonth={changeSecondMonth}
+                                                        changeYear={changeSecondYear}
+                                                        minDate={minDate}
+                                                        maxDate={maxDate}
+                                                    />
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {showFooter && <Footer />}
                                 </div>
                             </div>
-
-                            {showFooter && <Footer />}
-                        </div>
-                    </div>
-                )}
+                        </div>,
+                        document.body
+                    )}
             </div>
         </DatepickerContext.Provider>
     );
