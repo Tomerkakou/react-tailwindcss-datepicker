@@ -93,7 +93,7 @@ export default function Playground() {
             )}
 
             <div className="max-w-md ms-auto my-4">
-                {/* <Datepicker
+                <Datepicker
                     value={value}
                     primaryColor={primaryColor as ColorKeys}
                     onChange={(value, e) => {
@@ -163,7 +163,7 @@ export default function Playground() {
                     }}
                     popoverDirection={popoverDirection}
                     required={required}
-                /> */}
+                />
             </div>
             <div className="py-4 max-w-3xl mx-auto flex flex-row flex-wrap">
                 <div className="w-full sm:w-1/3 pr-2 flex flex-row flex-wrap sm:flex-col">

@@ -89,6 +89,7 @@ const Datepicker = (props: DatepickerType) => {
     const [input, setInput] = useState<HTMLInputElement | null>(null);
     const isSmallScreen = useMediaQuery("(max-width: 639px)");
     const [mounted, setMounted] = useState<boolean>(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [trigger, setTrigger] = useState();
 
     useEffect(() => {
@@ -128,6 +129,7 @@ const Datepicker = (props: DatepickerType) => {
                 arrow.classList.add("border-t");
             }, 300);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mounted]);
 
     /** First Calendar Navigation */
@@ -464,6 +466,7 @@ const Datepicker = (props: DatepickerType) => {
         }
 
         return style as React.CSSProperties;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [appendToBody, input, popoverDirection, mounted, isSmallScreen, arrowRef, containerRef]);
 
     return (
