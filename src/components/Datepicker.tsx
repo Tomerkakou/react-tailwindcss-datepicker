@@ -1,4 +1,3 @@
-"use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -90,7 +89,7 @@ const Datepicker = (props: DatepickerType) => {
     const isSmallScreen = useMediaQuery("(max-width: 639px)");
     const [mounted, setMounted] = useState<boolean>(false);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [trigger, setTrigger] = useState();
+    const [_, setTrigger] = useState<object>();
 
     useEffect(() => {
         setMounted(true);
