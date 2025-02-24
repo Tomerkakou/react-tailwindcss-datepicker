@@ -63,11 +63,11 @@ const Days = (props: Props) => {
                 className = ` ${BG_COLOR["500"][primaryColor]} text-white font-medium rounded-full`;
             } else if (dayIsSameStart) {
                 className = ` ${BG_COLOR["500"][primaryColor]} text-white font-medium ${
-                    dayIsSameHoverDay && !period.end ? "rounded-full" : "rounded-l-full"
+                    dayIsSameHoverDay && !period.end ? "rounded-full" : "rounded-s-full"
                 }`;
             } else if (dayIsSameEnd) {
                 className = ` ${BG_COLOR["500"][primaryColor]} text-white font-medium ${
-                    dayIsSameHoverDay && !period.start ? "rounded-full" : "rounded-r-full"
+                    dayIsSameHoverDay && !period.start ? "rounded-full" : "rounded-e-full"
                 }`;
             }
 
@@ -118,7 +118,7 @@ const Days = (props: Props) => {
             if (dateIsSame(dayHover, day, "date")) {
                 const bgColor = BG_COLOR["500"][primaryColor];
                 className = ` transition-all duration-500 text-white font-medium ${bgColor} ${
-                    period.start ? "rounded-r-full" : "rounded-l-full"
+                    period.start ? "rounded-e-full" : "rounded-s-full"
                 }`;
             }
 

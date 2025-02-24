@@ -391,63 +391,80 @@ const Datepicker = (props: DatepickerType) => {
         const container = containerRef.current;
         const arrow = arrowRef.current;
 
-        // By default, place below (down).
+        // Detect if the page is in RTL mode.
+        const isRTL =
+            document.documentElement.getAttribute("dir") === "rtl" ||
+            window.getComputedStyle(document.documentElement).direction === "rtl";
+
+        // By default, place below the input.
         let style: React.CSSProperties = {
-            position: "fixed",
-            top: inputRect.bottom + scrollTop + 1,
-            left: inputRect.left + scrollLeft,
+            position: "absolute",
+            top: inputRect.bottom + 1,
+            // Use 'right' if RTL, otherwise 'left'
+            ...(isRTL
+                ? { right: window.innerWidth - inputRect.right + scrollLeft }
+                : { left: inputRect.left + scrollLeft }),
             zIndex: 1000
         };
 
         setTimeout(() => setTrigger({}), 0);
 
-        // Check direction
+        // Check for popoverDirection overrides
         if (popoverDirection === "up") {
-            // Place above
+            // Place above the input.
             style = {
-                position: "fixed",
-                // The "bottom" css property is from the *bottom* of the viewport,
-                // so let's compute: window.innerHeight - inputRect.top => distance from top of input to bottom of viewport
+                position: "absolute",
                 bottom: window.innerHeight - inputRect.top - scrollTop + 1,
-                left: inputRect.left + scrollLeft,
-                zIndex: 1000
+                ...(isRTL
+                    ? { right: window.innerWidth - inputRect.right + scrollLeft }
+                    : { left: inputRect.left + scrollLeft }),
+                zIndex: 298
             };
         } else if (popoverDirection === "down") {
-            // Force down — can override any "smart" logic here
+            // Force placement below.
             style = {
-                position: "fixed",
+                position: "absolute",
                 top: inputRect.bottom + scrollTop + 1,
-                left: inputRect.left + scrollLeft,
-                zIndex: 1000
+                ...(isRTL
+                    ? { right: window.innerWidth - inputRect.right + scrollLeft }
+                    : { left: inputRect.left + scrollLeft }),
+                zIndex: 298
             };
         } else {
-            // If popoverDirection is not set, you can keep the old "auto" logic
-            // For example:
-            // You could also check if there's enough space below or not.
-            // If not enough space below, place it up. (similar to the logic in `Input`.)
-            // e.g.,
-            // const spaceBelow = window.innerHeight - inputRect.bottom;
-            // if (spaceBelow < 300) {
-            //   style = {
-            //     position: "fixed",
-            //     bottom: window.innerHeight - inputRect.top - scrollTop + 1,
-            //     left: inputRect.left + scrollLeft,
-            //     zIndex: 1000
-            //   };
-            // }
+            // Auto logic can be extended here if needed.
         }
 
+        // Determine the horizontal center of the input
         const containerCenter =
             Math.floor((inputRect.right - inputRect.left) / 2 + inputRect.left) + 1;
         const screenCenter = Math.floor(window.innerWidth / 2);
 
-        // Place it left or right if near the screen's edge
+        // Adjust arrow placement based on RTL vs LTR and screen edge proximity
         if (container && arrow) {
-            if (containerCenter > screenCenter) {
-                arrow.classList.add("right-0");
-                arrow.classList.add("mr-3.5");
-                style.right = window.innerWidth - inputRect.right;
-                style.left = undefined; // remove left if we use right
+            if (isRTL) {
+                // In RTL, if the input's center is left of the screen center,
+                // we align the arrow to the left.
+                if (containerCenter < screenCenter) {
+                    arrow.classList.add("left-0");
+                    arrow.classList.add("ml-3.5");
+                    style = {
+                        ...style,
+                        left: inputRect.left + scrollLeft,
+                        right: undefined // Remove right if using left
+                    };
+                }
+            } else {
+                // In LTR, if the input's center is right of the screen center,
+                // we align the arrow to the right.
+                if (containerCenter > screenCenter) {
+                    arrow.classList.add("right-0");
+                    arrow.classList.add("mr-3.5");
+                    style = {
+                        ...style,
+                        right: window.innerWidth - inputRect.right,
+                        left: undefined // Remove left if using right
+                    };
+                }
             }
         }
 
@@ -458,7 +475,7 @@ const Datepicker = (props: DatepickerType) => {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                zIndex: 1000,
+                zIndex: 298,
                 height: "100vh",
                 width: "100vw"
             } as React.CSSProperties;
@@ -479,22 +496,24 @@ const Datepicker = (props: DatepickerType) => {
                             ref={calendarContainerRef}
                             style={calculatePosition()}
                         >
-                            <Arrow ref={arrowRef} />
+                            <Arrow ref={arrowRef} hide={isSmallScreen} />
                             <div
                                 ref={backdropRef}
                                 className={
-                                    isSmallScreen ? "fixed inset-0 bg-black bg-opacity-50 z-40" : ""
+                                    isSmallScreen
+                                        ? "fixed inset-0 bg-[var(--tw-backdrop-background-color)] bg-opacity-70 z-[299]"
+                                        : ""
                                 }
                             />
                             <div
                                 ref={modalRef}
                                 className={
                                     isSmallScreen
-                                        ? "fixed inset-0 z-50 flex items-center justify-center overflow-auto p-3"
+                                        ? "fixed inset-0 z-[300] flex items-center justify-center overflow-auto p-3"
                                         : ""
                                 }
                             >
-                                <div className="mt-2.5 shadow-sm border border-gray-300 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600 rounded-lg w-fit p-3">
+                                <div className="mt-2.5 shadow-sm border border-gray-300 bg-[var(--tw-modal-background-color)] rounded-lg w-fit p-3">
                                     {isSmallScreen && (
                                         <div className="flex justify-end p-1 w-full">
                                             <button

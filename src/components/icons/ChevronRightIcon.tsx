@@ -5,7 +5,7 @@ const ChevronRightIcon = (props: IconProps) => {
 
     return (
         <svg
-            className={className}
+            className={className + " rtl:transform rtl:rotate-180"}
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
