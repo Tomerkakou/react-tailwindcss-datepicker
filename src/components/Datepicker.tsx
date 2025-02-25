@@ -31,7 +31,6 @@ import {
 import { Period, DatepickerType, ColorKeys, DateType } from "../types";
 
 import Arrow from "./icons/Arrow";
-import CloseIcon from "./icons/CloseIcon";
 import VerticalDash from "./VerticalDash";
 
 const Datepicker = (props: DatepickerType) => {
