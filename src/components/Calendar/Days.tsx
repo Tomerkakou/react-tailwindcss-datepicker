@@ -124,7 +124,7 @@ const Days = (props: Props) => {
                 className = ` transition-all duration-500 text-white font-medium ${bgColor} ${
                     period.start
                         ? "rounded-r-full rtl:rounded-l-full rtl:rounded-r-0"
-                        : "rtl:rounded-r-full rtl:rounded-l-0"
+                        : "rounded-l-full rtl:rounded-r-full rtl:rounded-l-0"
                 }`;
             }
 
