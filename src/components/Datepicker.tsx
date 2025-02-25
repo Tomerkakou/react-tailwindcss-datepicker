@@ -88,6 +88,7 @@ const Datepicker = (props: DatepickerType) => {
     const [input, setInput] = useState<HTMLInputElement | null>(null);
     const isSmallScreen = useMediaQuery("(max-width: 639px)");
     const [mounted, setMounted] = useState<boolean>(false);
+    const [style, setStyle] = useState<object>();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, setTrigger] = useState<object>();
 
@@ -492,6 +493,20 @@ const Datepicker = (props: DatepickerType) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [appendToBody, input, popoverDirection, mounted, isSmallScreen, arrowRef, containerRef]);
 
+    useEffect(() => {
+        if (!mounted) return;
+
+        const handleChange = () => setStyle(calculatePosition());
+
+        window.addEventListener("resize", handleChange);
+        window.addEventListener("scroll", handleChange);
+
+        return () => {
+            window.removeEventListener("resize", handleChange);
+            window.removeEventListener("scroll", handleChange);
+        };
+    }, [calculatePosition, input, mounted, containerRef, arrowRef, calendarContainerRef, setStyle]);
+
     return (
         <DatepickerContext.Provider value={contextValues}>
             <div className={containerClassNameOverload} ref={containerRef}>
@@ -501,7 +516,7 @@ const Datepicker = (props: DatepickerType) => {
                         <div
                             className={popupClassNameOverload}
                             ref={calendarContainerRef}
-                            style={calculatePosition()}
+                            style={style ?? calculatePosition()}
                         >
                             <Arrow ref={arrowRef} hide={true} />
                             <div
