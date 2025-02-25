@@ -76,6 +76,7 @@ const Datepicker = (props: DatepickerType) => {
     const arrowRef = useRef<HTMLDivElement | null>(null);
     const backdropRef = useRef<HTMLDivElement | null>(null);
     const modalRef = useRef<HTMLDivElement | null>(null);
+    const modalContentRef = useRef<HTMLDivElement | null>(null);
 
     // States
     const [firstDate, setFirstDate] = useState<Date>(
@@ -101,6 +102,13 @@ const Datepicker = (props: DatepickerType) => {
         const calendar = calendarContainerRef.current;
         if (calendar && calendar.contains(event?.target as Node)) return;
         if (container) hideDatepicker();
+    });
+
+    useOnClickOutside(modalContentRef.current, event => {
+        const modalContent = modalContentRef.current;
+        const calendar = calendarContainerRef.current;
+        if (modalContent && modalContent.contains(event?.target as Node)) return;
+        if (calendar) hideDatepicker();
     });
 
     // Hide datepicker
@@ -496,7 +504,7 @@ const Datepicker = (props: DatepickerType) => {
                             ref={calendarContainerRef}
                             style={calculatePosition()}
                         >
-                            <Arrow ref={arrowRef} hide={isSmallScreen} />
+                            <Arrow ref={arrowRef} hide={true} />
                             <div
                                 ref={backdropRef}
                                 className={
@@ -513,8 +521,11 @@ const Datepicker = (props: DatepickerType) => {
                                         : ""
                                 }
                             >
-                                <div className="mt-2.5 shadow-sm border border-gray-300 bg-[var(--tw-modal-background-color)] rounded-lg w-fit p-3">
-                                    {isSmallScreen && (
+                                <div
+                                    className="mt-2.5 shadow-sm border border-gray-300 bg-[var(--tw-modal-background-color)] rounded-lg w-fit p-3"
+                                    ref={modalContentRef}
+                                >
+                                    {/* {isSmallScreen && (
                                         <div className="flex justify-end p-1 w-full">
                                             <button
                                                 onClick={hideDatepicker}
@@ -523,7 +534,7 @@ const Datepicker = (props: DatepickerType) => {
                                                 <CloseIcon className="w-6 h-6" />
                                             </button>
                                         </div>
-                                    )}
+                                    )} */}
                                     <div className="flex flex-col lg:flex-row py-2 max-h-[80vh] overflow-y-auto max-w-[80vw]">
                                         {showShortcuts && <Shortcuts />}
 
