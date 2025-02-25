@@ -16,7 +16,23 @@ import { COLORS, DATE_LOOKING_OPTIONS } from "../src/constants";
 import { dateFormat, dateIsValid } from "../src/libs/date";
 
 const WEEK_DAY = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
-const POPOVER_DIRECTION = ["up", "down"] as const;
+const POPOVER_DIRECTION = [
+    "auto-end",
+    "auto-start",
+    "auto",
+    "bottom-end",
+    "bottom-start",
+    "bottom",
+    "left-end",
+    "left-start",
+    "left",
+    "right-end",
+    "right-start",
+    "right",
+    "top-end",
+    "top-start",
+    "top"
+] as const;
 
 export default function Playground() {
     const [value, setValue] = useState<DateValueType>({
@@ -45,7 +61,7 @@ export default function Playground() {
     const [startFrom, setStartFrom] = useState(dateFormat(new Date(), "YYYY-MM-DD") || "");
     const [startWeekOn, setStartWeekOn] = useState<WeekStringType>("mon");
     const [required, setRequired] = useState(false);
-    const [popoverDirection, setPopoverDirection] = useState<PopoverDirectionType>("down");
+    const [popoverDirection, setPopoverDirection] = useState<PopoverDirectionType>("auto");
     const [appendToBody, setAppendToBody] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -76,7 +92,6 @@ export default function Playground() {
                                 <Datepicker
                                     value={value}
                                     onChange={setValue}
-                                    appendToBody
                                     displayFormat="MMM DD, YYYY"
                                     popoverDirection={popoverDirection}
                                 />
@@ -141,7 +156,6 @@ export default function Playground() {
                             apply: "AText"
                         }
                     }}
-                    appendToBody={appendToBody}
                     asSingle={asSingle}
                     placeholder={placeholder}
                     separator={separator}

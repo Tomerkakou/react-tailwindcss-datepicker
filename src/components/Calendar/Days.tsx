@@ -212,6 +212,11 @@ const Days = (props: Props) => {
 
     const hoverDay = useCallback(
         (day: Date) => {
+            // Skip if the day is the same as current hover day to prevent unnecessary updates
+            if (dayHover && dateIsSame(day, dayHover, "date")) {
+                return;
+            }
+
             if (period.start && !period.end) {
                 const hoverPeriod = { ...period, end: day };
 
@@ -220,10 +225,13 @@ const Days = (props: Props) => {
                     hoverPeriod.end = period.start;
 
                     if (!checkIfHoverPeriodContainsDisabledPeriod(hoverPeriod)) {
-                        changePeriod({
-                            start: null,
-                            end: period.start
-                        });
+                        // Only update period if it's different from current
+                        if (period.start !== null || period.end !== period.start) {
+                            changePeriod({
+                                start: null,
+                                end: period.start
+                            });
+                        }
                     }
                 }
 
@@ -239,10 +247,13 @@ const Days = (props: Props) => {
                     hoverPeriod.start = period.end;
                     hoverPeriod.end = day;
                     if (!checkIfHoverPeriodContainsDisabledPeriod(hoverPeriod)) {
-                        changePeriod({
-                            start: period.end,
-                            end: null
-                        });
+                        // Only update period if it's different from current
+                        if (period.start !== period.end || period.end !== null) {
+                            changePeriod({
+                                start: period.end,
+                                end: null
+                            });
+                        }
                     }
                 }
                 if (!checkIfHoverPeriodContainsDisabledPeriod(hoverPeriod)) {
@@ -250,7 +261,7 @@ const Days = (props: Props) => {
                 }
             }
         },
-        [changeDayHover, changePeriod, checkIfHoverPeriodContainsDisabledPeriod, period]
+        [changeDayHover, changePeriod, checkIfHoverPeriodContainsDisabledPeriod, period, dayHover]
     );
 
     const handleClickDay = useCallback(

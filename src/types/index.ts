@@ -53,7 +53,22 @@ export type ClassNamesTypeProp = {
     footer?: (p?: object | null | undefined) => string | undefined;
 };
 
-export type PopoverDirectionType = "up" | "down";
+export type PopoverDirectionType =
+    | "auto-end"
+    | "auto-start"
+    | "auto"
+    | "bottom-end"
+    | "bottom-start"
+    | "bottom"
+    | "left-end"
+    | "left-start"
+    | "left"
+    | "right-end"
+    | "right-start"
+    | "right"
+    | "top-end"
+    | "top-start"
+    | "top";
 
 export type WeekStringType = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 
@@ -92,7 +107,7 @@ export interface DatepickerType {
     startWeekOn?: WeekStringType;
     popoverDirection?: PopoverDirectionType;
     required?: boolean;
-    appendToBody?: boolean;
+    disablePortal?: boolean;
 }
 
 export type ColorKeys = (typeof COLORS)[number]; // "blue" | "orange"

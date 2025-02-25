@@ -38,7 +38,7 @@ const Footer = () => {
                                     startDate: period.start,
                                     endDate: period.end
                                 },
-                                input
+                                input?.current
                             );
                             hideDatepicker();
                         }

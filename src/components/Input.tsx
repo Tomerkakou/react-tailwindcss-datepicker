@@ -1,4 +1,13 @@
-import { ChangeEvent, KeyboardEvent, useCallback, useContext, useEffect, useRef } from "react";
+import {
+    ChangeEvent,
+    forwardRef,
+    KeyboardEvent,
+    RefObject,
+    useCallback,
+    useContext,
+    useEffect,
+    useRef
+} from "react";
 
 import { BORDER_COLOR, RING_COLOR } from "../constants";
 import DatepickerContext from "../contexts/DatepickerContext";
@@ -7,18 +16,17 @@ import { DateType } from "../types";
 
 import ToggleButton from "./ToggleButton";
 
-const Input = () => {
+const Input = forwardRef<HTMLInputElement>(function Input(_, inputRef) {
     // Context
     const {
         primaryColor,
         period,
         dayHover,
         changeDayHover,
-        calendarContainer,
-        arrowContainer,
         inputText,
         changeInputText,
         hideDatepicker,
+        showDatepicker,
         changeDatepickerValue,
         asSingle,
         placeholder,
@@ -32,23 +40,15 @@ const Input = () => {
         inputId,
         inputName,
         classNames,
-        popoverDirection,
-        required,
-        input,
-        setInput,
-        appendToBody,
-        mounted,
-        modal,
-        backdrop
+        required
     } = useContext(DatepickerContext);
 
     // UseRefs
     const buttonRef = useRef<HTMLButtonElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
 
     // Functions
     const getClassName = useCallback(() => {
-        const input = inputRef.current;
+        const input = (inputRef as RefObject<HTMLInputElement>)?.current;
 
         if (input && typeof classNames !== "undefined" && typeof classNames?.input === "function") {
             return classNames.input(input);
@@ -124,14 +124,14 @@ const Input = () => {
     const handleInputKeyDown = useCallback(
         (e: KeyboardEvent<HTMLInputElement>) => {
             if (e.key === "Enter") {
-                const input = inputRef.current;
+                const input = (inputRef as RefObject<HTMLInputElement>)?.current;
                 if (input) {
                     input.blur();
                 }
                 hideDatepicker();
             }
         },
-        [hideDatepicker]
+        [hideDatepicker, inputRef]
     );
 
     const renderToggleIcon = useCallback(
@@ -166,19 +166,12 @@ const Input = () => {
               : defaultToggleClassName;
     }, [toggleClassName, buttonRef, classNames]);
 
-    // UseEffects && UseLayoutEffect
-    useEffect(() => {
-        if (!input && inputRef?.current) {
-            setInput(inputRef.current);
-        }
-    }, [input, inputRef, setInput]);
-
     useEffect(() => {
         const button = buttonRef?.current;
 
         function focusInput(e: Event) {
             e.stopPropagation();
-            const input = inputRef.current;
+            const input = (inputRef as RefObject<HTMLInputElement>)?.current;
 
             if (input) {
                 if (inputText) {
@@ -218,68 +211,22 @@ const Input = () => {
         inputText,
         period.end,
         period.start,
-        inputRef,
-        mounted
+        inputRef
     ]);
 
     useEffect(() => {
-        const div = calendarContainer?.current;
-        const input = inputRef.current;
-        const arrow = arrowContainer?.current;
-        const modalDiv = modal?.current;
-        const backdropDiv = backdrop?.current;
+        const input = (inputRef as RefObject<HTMLInputElement>)?.current;
 
-        function showCalendarContainer() {
-            if (arrow && div && div.classList.contains("hidden")) {
-                div.classList.remove("hidden");
-                div.classList.add("block");
-                modalDiv?.classList.remove("hidden");
-                backdropDiv?.classList.remove("hidden");
-
-                const popoverOnUp = popoverDirection == "up";
-                const popoverOnDown = popoverDirection === "down";
-                if (
-                    popoverOnUp ||
-                    (window.innerWidth > 767 &&
-                        window.screen.height - 100 < div.getBoundingClientRect().bottom &&
-                        !popoverOnDown)
-                ) {
-                    div.classList.add("bottom-full");
-                    div.classList.add("mb-2.5");
-                    div.classList.remove("mt-2.5");
-                    arrow.classList.add("-bottom-2");
-                    arrow.classList.add("border-r");
-                    arrow.classList.add("border-b");
-                    arrow.classList.remove("border-l");
-                    arrow.classList.remove("border-t");
-                }
-
-                setTimeout(() => {
-                    div.classList.remove("translate-y-4");
-                    div.classList.remove("opacity-0");
-                    div.classList.add("translate-y-0");
-                    div.classList.add("opacity-1");
-                }, 1);
-            }
-        }
-        if (div && input) {
-            input.addEventListener("focus", showCalendarContainer);
+        if (input) {
+            input.addEventListener("focus", showDatepicker);
         }
 
         return () => {
             if (input) {
-                input.removeEventListener("focus", showCalendarContainer);
+                input.removeEventListener("focus", showDatepicker);
             }
         };
-    }, [
-        calendarContainer,
-        arrowContainer,
-        popoverDirection,
-        appendToBody,
-        mounted,
-        modal,
-        backdrop
-    ]);
+    }, [showDatepicker, inputRef]);
 
     return (
         <>
@@ -314,6 +261,6 @@ const Input = () => {
             </button>
         </>
     );
-};
+});
 
 export default Input;

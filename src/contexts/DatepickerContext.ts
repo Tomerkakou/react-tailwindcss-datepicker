@@ -22,10 +22,7 @@ import {
 } from "../types";
 
 interface DatepickerStore {
-    arrowContainer: RefObject<HTMLDivElement | null> | null;
     asSingle?: boolean;
-    appendToBody: boolean;
-    calendarContainer: RefObject<HTMLDivElement | null> | null;
     changeDatepickerValue: (value: DateValueType, e?: HTMLInputElement | null) => void;
     changeDayHover: (day: DateType) => void;
     changeInputText: (text: string) => void;
@@ -41,9 +38,11 @@ interface DatepickerStore {
     displayFormat: string;
 
     hideDatepicker: () => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    showDatepicker: (event: any) => void;
 
     i18n: string;
-    input?: HTMLInputElement | null;
+    input: RefObject<HTMLInputElement | null> | null;
     inputClassName?: ((className: string) => string) | string | null;
     inputId?: string;
     inputName?: string;
@@ -63,7 +62,6 @@ interface DatepickerStore {
 
     showFooter?: boolean;
     startWeekOn?: WeekStringType | null;
-    setInput: (value: HTMLInputElement | null) => void;
 
     toggleClassName?: ((className: string) => string) | string | null;
     toggleIcon?: (open: boolean) => ReactNode;
@@ -71,17 +69,11 @@ interface DatepickerStore {
     updateFirstDate: (date: Date) => void;
 
     value: DateValueType;
-    mounted: boolean;
-    modal: RefObject<HTMLDivElement | null> | null;
-    backdrop: RefObject<HTMLDivElement | null> | null;
 }
 
 const DatepickerContext = createContext<DatepickerStore>({
-    arrowContainer: null,
     asSingle: false,
-    appendToBody: true,
 
-    calendarContainer: null,
     changeDatepickerValue: () => {},
     changeDayHover: () => {},
     changeInputText: () => {},
@@ -97,10 +89,11 @@ const DatepickerContext = createContext<DatepickerStore>({
     displayFormat: DATE_FORMAT,
 
     hideDatepicker: () => {},
+    showDatepicker: () => {},
 
     i18n: LANGUAGE,
 
-    input: undefined,
+    input: null,
     inputClassName: "",
 
     inputId: undefined,
@@ -120,17 +113,13 @@ const DatepickerContext = createContext<DatepickerStore>({
     separator: DEFAULT_SEPARATOR,
     showFooter: false,
     startWeekOn: START_WEEK,
-    setInput: () => {},
 
     toggleClassName: "",
     toggleIcon: undefined,
 
     updateFirstDate: () => {},
 
-    value: null,
-    mounted: false,
-    modal: null,
-    backdrop: null
+    value: null
 });
 
 export default DatepickerContext;
