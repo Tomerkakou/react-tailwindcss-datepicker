@@ -1,69 +1,5 @@
-import { Dialog, Popover, useMediaQuery, useTheme } from "@mui/material";
+import { ClickAwayListener, Dialog, Popper, useMediaQuery, useTheme } from "@mui/material";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const POPOVER_DIRECTION_MAPPING: Record<PopoverDirectionType, any> = {
-    auto: {
-        anchorOrigin: { vertical: "bottom", horizontal: "left" },
-        transformOrigin: { vertical: "top", horizontal: "left" }
-    },
-    "auto-start": {
-        anchorOrigin: { vertical: "bottom", horizontal: "left" },
-        transformOrigin: { vertical: "top", horizontal: "left" }
-    },
-    "auto-end": {
-        anchorOrigin: { vertical: "bottom", horizontal: "right" },
-        transformOrigin: { vertical: "top", horizontal: "right" }
-    },
-    top: {
-        anchorOrigin: { vertical: "top", horizontal: "center" },
-        transformOrigin: { vertical: "bottom", horizontal: "center" }
-    },
-    "top-start": {
-        anchorOrigin: { vertical: "top", horizontal: "left" },
-        transformOrigin: { vertical: "bottom", horizontal: "left" }
-    },
-    "top-end": {
-        anchorOrigin: { vertical: "top", horizontal: "right" },
-        transformOrigin: { vertical: "bottom", horizontal: "right" }
-    },
-    bottom: {
-        anchorOrigin: { vertical: "bottom", horizontal: "center" },
-        transformOrigin: { vertical: "top", horizontal: "center" }
-    },
-    "bottom-start": {
-        anchorOrigin: { vertical: "bottom", horizontal: "left" },
-        transformOrigin: { vertical: "top", horizontal: "left" }
-    },
-    "bottom-end": {
-        anchorOrigin: { vertical: "bottom", horizontal: "right" },
-        transformOrigin: { vertical: "top", horizontal: "right" }
-    },
-    left: {
-        anchorOrigin: { vertical: "center", horizontal: "left" },
-        transformOrigin: { vertical: "center", horizontal: "right" }
-    },
-    "left-start": {
-        anchorOrigin: { vertical: "top", horizontal: "left" },
-        transformOrigin: { vertical: "top", horizontal: "right" }
-    },
-    "left-end": {
-        anchorOrigin: { vertical: "bottom", horizontal: "left" },
-        transformOrigin: { vertical: "bottom", horizontal: "right" }
-    },
-    right: {
-        anchorOrigin: { vertical: "center", horizontal: "right" },
-        transformOrigin: { vertical: "center", horizontal: "left" }
-    },
-    "right-start": {
-        anchorOrigin: { vertical: "top", horizontal: "right" },
-        transformOrigin: { vertical: "top", horizontal: "left" }
-    },
-    "right-end": {
-        anchorOrigin: { vertical: "bottom", horizontal: "right" },
-        transformOrigin: { vertical: "bottom", horizontal: "left" }
-    }
-};
 
 import Calendar from "../components/Calendar";
 import Footer from "../components/Footer";
@@ -91,7 +27,7 @@ import {
     nextMonthBy,
     previousMonthBy
 } from "../libs/date";
-import { ColorKeys, DatepickerType, DateType, Period, PopoverDirectionType } from "../types";
+import { ColorKeys, DatepickerType, DateType, Period } from "../types";
 
 import VerticalDash from "./VerticalDash";
 
@@ -144,7 +80,6 @@ const Datepicker = (props: DatepickerType) => {
     const [inputText, setInputText] = useState<string>("");
     const input = useRef<HTMLInputElement | null>(null);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const calendarContainerRef = useRef<HTMLDivElement | null>(null);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -365,80 +300,116 @@ const Datepicker = (props: DatepickerType) => {
         return defaultPopupClassName;
     }, [popupClassName]);
 
-    const CalenderPopup = () => (
-        <div className={popupClassNameOverload} ref={calendarContainerRef}>
-            <div className="flex flex-col lg:flex-row max-h-[80vh] overflow-y-auto max-w-[80vw]">
-                {showShortcuts && <Shortcuts />}
-
-                <div className="flex items-stretch flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-1.5">
-                    <Calendar
-                        date={firstDate}
-                        onClickPrevious={previousMonthFirst}
-                        onClickNext={nextMonthFirst}
-                        changeMonth={changeFirstMonth}
-                        changeYear={changeFirstYear}
-                        minDate={minDate}
-                        maxDate={maxDate}
-                    />
-
-                    {useRange && (
-                        <>
-                            <div className="flex items-center">
-                                <VerticalDash />
-                            </div>
-
-                            <Calendar
-                                date={secondDate}
-                                onClickPrevious={previousMonthSecond}
-                                onClickNext={nextMonthSecond}
-                                changeMonth={changeSecondMonth}
-                                changeYear={changeSecondYear}
-                                minDate={minDate}
-                                maxDate={maxDate}
-                            />
-                        </>
-                    )}
-                </div>
-            </div>
-
-            {showFooter && <Footer />}
-        </div>
-    );
-
     return (
         <DatepickerContext.Provider value={contextValues}>
             <div className={containerClassNameOverload} ref={containerRef}>
                 <Input ref={input} />
-                {input?.current &&
-                    (isMobile ? (
-                        <Dialog
-                            open={Boolean(anchorEl)}
-                            onClose={() => setAnchorEl(null)}
-                            disableRestoreFocus
-                            maxWidth="md"
-                        >
-                            <CalenderPopup />
-                        </Dialog>
-                    ) : (
-                        <Popover
-                            open={Boolean(anchorEl)}
-                            anchorEl={anchorEl}
-                            onClose={() => setAnchorEl(null)}
-                            disablePortal={disablePortal}
-                            disableEnforceFocus
-                            disableScrollLock
-                            disableRestoreFocus
-                            keepMounted={false}
-                            {...(popoverDirection
-                                ? POPOVER_DIRECTION_MAPPING[popoverDirection]
-                                : {
-                                      anchorOrigin: { vertical: "bottom", horizontal: "left" },
-                                      transformOrigin: { vertical: "top", horizontal: "left" }
-                                  })}
-                        >
-                            <CalenderPopup />
-                        </Popover>
-                    ))}
+                <Dialog
+                    open={Boolean(anchorEl) && isMobile}
+                    onClose={() => setAnchorEl(null)}
+                    disableRestoreFocus
+                    maxWidth="md"
+                >
+                    <div className={popupClassNameOverload}>
+                        <div className="flex flex-col lg:flex-row max-h-[80vh] overflow-y-auto max-w-[80vw]">
+                            {showShortcuts && <Shortcuts />}
+
+                            <div className="flex items-stretch flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-1.5">
+                                <Calendar
+                                    date={firstDate}
+                                    onClickPrevious={previousMonthFirst}
+                                    onClickNext={nextMonthFirst}
+                                    changeMonth={changeFirstMonth}
+                                    changeYear={changeFirstYear}
+                                    minDate={minDate}
+                                    maxDate={maxDate}
+                                />
+
+                                {useRange && (
+                                    <>
+                                        <div className="flex items-center">
+                                            <VerticalDash />
+                                        </div>
+
+                                        <Calendar
+                                            date={secondDate}
+                                            onClickPrevious={previousMonthSecond}
+                                            onClickNext={nextMonthSecond}
+                                            changeMonth={changeSecondMonth}
+                                            changeYear={changeSecondYear}
+                                            minDate={minDate}
+                                            maxDate={maxDate}
+                                        />
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        {showFooter && <Footer />}
+                    </div>
+                </Dialog>
+
+                <Popper
+                    open={Boolean(anchorEl) && !isMobile}
+                    anchorEl={anchorEl}
+                    disablePortal={disablePortal}
+                    keepMounted={false}
+                    placement={popoverDirection}
+                >
+                    <ClickAwayListener
+                        onClickAway={(event: MouseEvent | TouchEvent) => {
+                            if (
+                                containerRef.current &&
+                                containerRef.current.contains(event.target as Node)
+                            ) {
+                                return;
+                            }
+                            if (anchorEl) {
+                                setAnchorEl(null);
+                            }
+                        }}
+                    >
+                        <div className="shadow-sm border border-gray-300 px-1 py-0.5 bg-white dark:bg-slate-800 dark:text-white dark:border-slate-600 rounded-lg">
+                            <div className={popupClassNameOverload}>
+                                <div className="flex flex-col lg:flex-row max-h-[80vh] overflow-y-auto max-w-[80vw]">
+                                    {showShortcuts && <Shortcuts />}
+
+                                    <div className="flex items-stretch flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-1.5">
+                                        <Calendar
+                                            date={firstDate}
+                                            onClickPrevious={previousMonthFirst}
+                                            onClickNext={nextMonthFirst}
+                                            changeMonth={changeFirstMonth}
+                                            changeYear={changeFirstYear}
+                                            minDate={minDate}
+                                            maxDate={maxDate}
+                                        />
+
+                                        {useRange && (
+                                            <>
+                                                <div className="flex items-center">
+                                                    <VerticalDash />
+                                                </div>
+
+                                                <Calendar
+                                                    date={secondDate}
+                                                    onClickPrevious={previousMonthSecond}
+                                                    onClickNext={nextMonthSecond}
+                                                    changeMonth={changeSecondMonth}
+                                                    changeYear={changeSecondYear}
+                                                    minDate={minDate}
+                                                    maxDate={maxDate}
+                                                />
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {showFooter && <Footer />}
+                        </div>
+                    </ClickAwayListener>
+                </Popper>
             </div>
         </DatepickerContext.Provider>
     );
