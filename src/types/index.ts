@@ -108,6 +108,7 @@ export interface DatepickerType {
     popoverDirection?: PopoverDirectionType;
     required?: boolean;
     disablePortal?: boolean;
+    zIndex?: number;
 }
 
 export type ColorKeys = (typeof COLORS)[number]; // "blue" | "orange"

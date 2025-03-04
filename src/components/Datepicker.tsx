@@ -64,7 +64,8 @@ const Datepicker = (props: DatepickerType) => {
         toggleIcon,
         useRange = true,
         value = null,
-        disablePortal = true
+        disablePortal = false,
+        zIndex
     } = props;
 
     // Refs
@@ -355,6 +356,7 @@ const Datepicker = (props: DatepickerType) => {
                     disablePortal={disablePortal}
                     keepMounted={false}
                     placement={popoverDirection}
+                    sx={{ zIndex: zIndex }}
                 >
                     <ClickAwayListener
                         onClickAway={(event: MouseEvent | TouchEvent) => {
