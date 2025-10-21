@@ -11,6 +11,7 @@ import {
 
 import { BORDER_COLOR, RING_COLOR } from "../constants";
 import DatepickerContext from "../contexts/DatepickerContext";
+import { useDebounce } from "../hooks/useDebounce";
 import { dateAdd, dateIsBefore, dateStringToDate } from "../libs/date";
 import { DateType } from "../types";
 
@@ -67,10 +68,8 @@ const Input = forwardRef<HTMLInputElement>(function Input(_, inputRef) {
               : defaultInputClassName;
     }, [inputRef, classNames, primaryColor, inputClassName]);
 
-    const handleInputChange = useCallback(
-        (e: ChangeEvent<HTMLInputElement>) => {
-            const inputValue = e.target.value;
-
+    const processInputChange = useCallback(
+        (inputValue: string, target: HTMLInputElement) => {
             const dates: Date[] = [];
 
             if (asSingle) {
@@ -106,7 +105,7 @@ const Input = forwardRef<HTMLInputElement>(function Input(_, inputRef) {
                         startDate: dates[0],
                         endDate: dates[1] || dates[0]
                     },
-                    e.target
+                    target
                 );
 
                 if (dates[1]) {
@@ -115,10 +114,19 @@ const Input = forwardRef<HTMLInputElement>(function Input(_, inputRef) {
                     changeDayHover(dates[0]);
                 }
             }
-
-            changeInputText(e.target.value);
         },
-        [asSingle, separator, changeDatepickerValue, changeDayHover, changeInputText]
+        [asSingle, separator, changeDatepickerValue, changeDayHover]
+    );
+
+    const debouncedProcessInputChange = useDebounce(processInputChange, 700);
+
+    const handleInputChange = useCallback(
+        (e: ChangeEvent<HTMLInputElement>) => {
+            const inputValue = e.target.value;
+            changeInputText(inputValue);
+            debouncedProcessInputChange(inputValue, e.target);
+        },
+        [changeInputText, debouncedProcessInputChange]
     );
 
     const handleInputKeyDown = useCallback(
