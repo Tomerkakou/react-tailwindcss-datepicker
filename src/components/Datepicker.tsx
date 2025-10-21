@@ -317,7 +317,7 @@ const Datepicker = (props: DatepickerType) => {
 
                             <div className="flex items-stretch flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-1.5">
                                 <Calendar
-                                    date={firstDate}
+                                    date={period.start || firstDate}
                                     onClickPrevious={previousMonthFirst}
                                     onClickNext={nextMonthFirst}
                                     changeMonth={changeFirstMonth}
@@ -333,7 +333,7 @@ const Datepicker = (props: DatepickerType) => {
                                         </div>
 
                                         <Calendar
-                                            date={secondDate}
+                                            date={period.end || secondDate}
                                             onClickPrevious={previousMonthSecond}
                                             onClickNext={nextMonthSecond}
                                             changeMonth={changeSecondMonth}
@@ -378,7 +378,7 @@ const Datepicker = (props: DatepickerType) => {
 
                                     <div className="flex items-stretch flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-1.5">
                                         <Calendar
-                                            date={firstDate}
+                                            date={period.start || firstDate}
                                             onClickPrevious={previousMonthFirst}
                                             onClickNext={nextMonthFirst}
                                             changeMonth={changeFirstMonth}
@@ -394,7 +394,7 @@ const Datepicker = (props: DatepickerType) => {
                                                 </div>
 
                                                 <Calendar
-                                                    date={secondDate}
+                                                    date={period.end || secondDate}
                                                     onClickPrevious={previousMonthSecond}
                                                     onClickNext={nextMonthSecond}
                                                     changeMonth={changeSecondMonth}
