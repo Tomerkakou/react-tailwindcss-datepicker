@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 import isBetween from "dayjs/plugin/isBetween";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
@@ -7,6 +8,7 @@ import isToday from "dayjs/plugin/isToday";
 import { LANGUAGE } from "../constants";
 import { DateType, WeekDaysIndexType, WeekStringType } from "../types";
 
+dayjs.extend(customParseFormat);
 dayjs.extend(isBetween);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -511,10 +513,23 @@ export function dateFormat(date: DateType, format: string, local = "en") {
 }
 
 export function dateStringToDate(dateString: string) {
-    const parseDate = dayjs(dateString);
+    const isValidDateFormat = /^(?:\d{4}([-/])\d{2}\1\d{2}|\d{2}([-/])\d{2}\2\d{4})$/.test(
+        dateString
+    );
 
-    if (!parseDate.isValid()) return null;
+    if (!isValidDateFormat) {
+        return null;
+    }
 
+    const parseDate = dayjs(
+        dateString,
+        ["YYYY/MM/DD", "YYYY-MM-DD", "DD/MM/YYYY", "DD-MM-YYYY"],
+        true
+    );
+
+    if (!parseDate.isValid()) {
+        return null;
+    }
     return parseDate.toDate();
 }
 
