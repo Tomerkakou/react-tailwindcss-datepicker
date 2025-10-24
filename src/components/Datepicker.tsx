@@ -165,6 +165,24 @@ const Datepicker = (props: DatepickerType) => {
                             : ` ${separator} ${dateFormat(value.endDate, displayFormat, i18n)}`
                     }`
                 );
+
+                // Update calendar to show the new date's month
+                if (dateIsValid(value.startDate)) {
+                    const startDate =
+                        value.startDate instanceof Date
+                            ? value.startDate
+                            : new Date(value.startDate);
+                    setFirstDate(startDate);
+                    if (!asSingle && value.endDate && dateIsValid(value.endDate)) {
+                        const endDate =
+                            value.endDate instanceof Date ? value.endDate : new Date(value.endDate);
+                        if (dateIsAfter(firstDayOfMonth(endDate), startDate, "date")) {
+                            setSecondDate(endDate);
+                        } else {
+                            setSecondDate(nextMonthBy(startDate));
+                        }
+                    }
+                }
             }
         }
         if (value && value.startDate === null && value.endDate === null) {
@@ -317,7 +335,7 @@ const Datepicker = (props: DatepickerType) => {
 
                             <div className="flex items-stretch flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-1.5">
                                 <Calendar
-                                    date={period.start || firstDate}
+                                    date={firstDate}
                                     onClickPrevious={previousMonthFirst}
                                     onClickNext={nextMonthFirst}
                                     changeMonth={changeFirstMonth}
@@ -333,7 +351,7 @@ const Datepicker = (props: DatepickerType) => {
                                         </div>
 
                                         <Calendar
-                                            date={period.end || secondDate}
+                                            date={secondDate}
                                             onClickPrevious={previousMonthSecond}
                                             onClickNext={nextMonthSecond}
                                             changeMonth={changeSecondMonth}
@@ -378,7 +396,7 @@ const Datepicker = (props: DatepickerType) => {
 
                                     <div className="flex items-stretch flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-1.5">
                                         <Calendar
-                                            date={period.start || firstDate}
+                                            date={firstDate}
                                             onClickPrevious={previousMonthFirst}
                                             onClickNext={nextMonthFirst}
                                             changeMonth={changeFirstMonth}
@@ -394,7 +412,7 @@ const Datepicker = (props: DatepickerType) => {
                                                 </div>
 
                                                 <Calendar
-                                                    date={period.end || secondDate}
+                                                    date={secondDate}
                                                     onClickPrevious={previousMonthSecond}
                                                     onClickNext={nextMonthSecond}
                                                     changeMonth={changeSecondMonth}
